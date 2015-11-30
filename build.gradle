@@ -44,3 +44,83 @@ processResources
         exclude 'mcmod.info'
     }
 }
+
+task clearBuild(type: Delete) {
+
+	delete('build/libs/')
+
+}
+
+task jarApi(type: Jar) {
+
+	includeEmptyDirs = true
+
+	from('src/main/java')
+
+	include('**/api/**')
+	
+	destinationDir = file('build/libs');
+	
+	extension = 'jar'
+	
+	archiveName = archivesBaseName + '-' + version + '-api.' + extension
+
+}
+
+task jarSrc(type: Jar) {
+
+	includeEmptyDirs = true
+
+	from('src/main/java')
+	
+	destinationDir = file('build/libs');
+	
+	extension = 'jar'
+	
+	archiveName = archivesBaseName + '-' + version + '-src.' + extension
+	
+}
+
+task jarRes(type: Jar) {
+
+	includeEmptyDirs = true
+
+	from('src/main/resources')
+	
+	destinationDir = file('build/libs');
+	
+	extension = 'jar'
+	
+	archiveName = archivesBaseName + '-' + version + '-res.' + extension
+	
+}
+
+task copyToArchive(type: Copy) {
+
+	destinationDir = file('build/archive/' + archivesBaseName + '-' + version)
+	
+	from('build/libs')
+
+}
+
+task clearGensDist(type: Delete) {
+
+	delete('../DATA/STEAA/')
+
+}
+
+task makeYGO(type: Copy, dependsOn: ['clearGensDist', 'build', 'jarSrc', 'jarRes', 'jarApi']) {
+	
+	rename('-' + version, '')
+	
+	destinationDir = file('../DATA/STEAA/')
+		
+	from('build/libs')
+
+}
+
+task make(dependsOn: ['makeYGO', 'copyToArchive'])
+
+copyToArchive.mustRunAfter makeYGO
+
+makeYGO.mustRunAfter clearBuild
